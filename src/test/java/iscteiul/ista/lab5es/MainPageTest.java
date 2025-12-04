@@ -118,4 +118,40 @@ public class MainPageTest {
         assertTrue(driver.getCurrentUrl().contains("login"));
     }
 
+    // --- NOVAS INTERAÇÕES ---
+
+    @Test
+    public void returnToHome() {
+        // 1. Forçar navegação para uma página diferente (ex: /all/)
+        driver.get("https://www.jetbrains.com/all/");
+
+        // 2. Encontrar o logótipo da JetBrains no cabeçalho
+        WebElement siteLogo = driver.findElement(
+                By.cssSelector("a[data-test='site-logo']")
+        );
+
+        // 3. Clicar no logótipo
+        siteLogo.click();
+
+        // 4. Verificar se voltámos à página inicial
+        assertEquals("https://www.jetbrains.com/", driver.getCurrentUrl());
+    }
+
+    @Test
+    public void solutionsMenu() {
+        // 1. Encontrar o botão "Solutions" no menu principal
+        WebElement solutionsButton = driver.findElement(
+                By.xpath("//button[@data-test='main-menu-item-action' and contains(., 'Solutions')]")
+        );
+
+        // 2. Clicar no menu
+        solutionsButton.click();
+
+        // 3. Verificar se o popup do menu apareceu.
+        WebElement subMenuLink = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//a[contains(text(), 'Remote Development')]")
+        ));
+
+        assertTrue(subMenuLink.isDisplayed());
+    }
 }

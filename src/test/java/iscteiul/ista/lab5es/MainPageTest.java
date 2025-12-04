@@ -24,7 +24,7 @@ public class MainPageTest {
 
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-        // FECHAR COOKIES ANTES DE QUALQUER COISA
+        // Fechar cookies antes de qualquer ação
         closeCookiesIfPresent();
 
         mainPage = new MainPage(driver);
@@ -32,27 +32,27 @@ public class MainPageTest {
 
     private void closeCookiesIfPresent() {
         try {
-            // espera até 5s por um banner de cookies
+            // Espera até 5s por um banner de cookies.
             WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(5));
 
-            // o overlay principal
+            // Overlay principal do cookie.
             WebElement container = shortWait.until(
                     ExpectedConditions.visibilityOfElementLocated(
                             By.cssSelector("div.ch2-container")
                     )
             );
 
-            // botão principal (aceitar/rejeitar – tanto faz para o teste)
+            // Botão principal (aceitar/rejeitar — indistinto para os testes).
             WebElement button = container.findElement(
                     By.cssSelector("button.ch2-btn-primary")
             );
             button.click();
 
-            // garantir que desapareceu
+            // Aguarda até o overlay desaparecer.
             shortWait.until(ExpectedConditions.invisibilityOf(container));
 
         } catch (TimeoutException | NoSuchElementException e) {
-            // se não aparecer banner ou a estrutura for ligeiramente diferente, segue em frente
+            // Se o banner não aparecer ou a estrutura for diferente, prossegue normalmente.
         }
     }
 
@@ -75,7 +75,6 @@ public class MainPageTest {
         assertEquals("Selenium", searchPageField.getAttribute("value"));
     }
 
-
     @Test
     public void toolsMenu() {
         mainPage.toolsMenu.click();
@@ -94,32 +93,27 @@ public class MainPageTest {
         assertEquals("All Developer Tools and Products by JetBrains", driver.getTitle());
     }
 
-
     @Test
     public void openStore() {
-
-        // 1) localizar o botão Store
+        // Localizar o botão Store
         WebElement storeButton = driver.findElement(
                 By.cssSelector("a[data-test='site-header-cart-action']")
         );
 
-        // 2) clicar
+        // Clicar
         storeButton.click();
 
-        // 3) validar que abriu a página da Store
+        // Validar que abriu a página da Store
         assertTrue(driver.getCurrentUrl().contains("store"));
-
     }
 
     @Test
     public void openLogin() {
-
-        // 1) clicar no botão de login
+        // Clicar no botão de login
         WebElement loginButton = driver.findElement(
                 By.cssSelector("a[data-test='site-header-profile-action'] svg[class*='22']")
         );
         loginButton.click();
-
 
         assertTrue(driver.getCurrentUrl().contains("login"));
     }

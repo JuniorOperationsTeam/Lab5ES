@@ -2,18 +2,13 @@ package iscteiul.ista.lab5es;
 
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
+
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
 import java.time.Duration;
-import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.ElementClickInterceptedException;
-import org.openqa.selenium.StaleElementReferenceException;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
 
 public class MainPageTest {
     private WebDriver driver;
@@ -24,244 +19,128 @@ public class MainPageTest {
     public void setUp() {
         driver = new ChromeDriver();
         driver.manage().window().maximize();
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         driver.get("https://www.jetbrains.com/");
+
+        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        // FECHAR COOKIES ANTES DE QUALQUER COISA
+        closeCookiesIfPresent();
+
         mainPage = new MainPage(driver);
+    }
+
+    private void closeCookiesIfPresent() {
+        try {
+            // espera até 5s por um banner de cookies
+            WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(5));
+
+            // o overlay principal
+            WebElement container = shortWait.until(
+                    ExpectedConditions.visibilityOfElementLocated(
+                            By.cssSelector("div.ch2-container")
+                    )
+            );
+
+            // botão principal (aceitar/rejeitar – tanto faz para o teste)
+            WebElement button = container.findElement(
+                    By.cssSelector("button.ch2-btn-primary")
+            );
+            button.click();
+
+            // garantir que desapareceu
+            shortWait.until(ExpectedConditions.invisibilityOf(container));
+
+        } catch (TimeoutException | NoSuchElementException e) {
+            // se não aparecer banner ou a estrutura for ligeiramente diferente, segue em frente
+        }
     }
 
     @AfterEach
     public void tearDown() {
-        if (driver != null) driver.quit();
-    }
-
-    private void pause(long ms) {
-        try {
-            Thread.sleep(ms);
-        } catch (InterruptedException ignored) {}
-    }
-
-    private void hideKnownOverlays() {
-        By[] overlaySelectors = new By[] {
-                By.cssSelector("button[aria-label*='cookie']"),
-                By.cssSelector("button[aria-label*='accept']"),
-                By.cssSelector("button#rcc-confirm-button"),
-                By.cssSelector(".cookie-banner button"),
-                By.cssSelector(".js-cookie-consent-accept"),
-                By.cssSelector(".overlay-close"),
-                By.cssSelector(".modal__close"),
-                By.cssSelector(".close")
-        };
-        for (By sel : overlaySelectors) {
-            try {
-                List<WebElement> els = driver.findElements(sel);
-                for (WebElement e : els) {
-                    if (e.isDisplayed() && e.isEnabled()) {
-                        try { e.click(); pause(200); } catch (Exception ex) {
-                            try { ((JavascriptExecutor) driver).executeScript("arguments[0].click();", e); pause(200); } catch (Exception ignored) {}
-                        }
-                    }
-                }
-            } catch (Exception ignored) {}
-        }
-    }
-
-    private void safeClick(WebElement element) {
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(12));
-        try {
-            hideKnownOverlays();
-            wait.until(ExpectedConditions.elementToBeClickable(element)).click();
-        } catch (ElementClickInterceptedException | TimeoutException | StaleElementReferenceException ex) {
-            try {
-                ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", element);
-                ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
-            } catch (Exception e2) {
-                try {
-                    new Actions(driver).moveToElement(element).click().perform();
-                } catch (Exception ignored) {}
-            }
-        } catch (Exception ignored) {}
-    }
-
-    private WebElement waitForAnyVisible(long timeoutSeconds, By... locators) {
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeoutSeconds));
-        return wait.until(drv -> {
-            for (By locator : locators) {
-                try {
-                    List<WebElement> els = drv.findElements(locator);
-                    for (WebElement el : els) {
-                        if (el.isDisplayed()) return el;
-                    }
-                } catch (Exception ignored) {}
-            }
-            return null;
-        });
-    }
-
-    private WebElement waitForSearchInput(long timeoutSeconds) {
-        String[] selectors = {
-                "[data-test='search-input']",
-                "input[type='search']",
-                "input[placeholder*='Search']",
-                "input[id*='search']",
-                "input[name*='search']",
-                "input[aria-label*='Search']",
-                "input[class*='search']"
-        };
-
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeoutSeconds));
-        return wait.until(drv -> {
-            for (String sel : selectors) {
-                try {
-                    List<WebElement> els = drv.findElements(By.cssSelector(sel));
-                    for (WebElement e : els) {
-                        if (e.isDisplayed() && e.isEnabled()) return e;
-                    }
-                } catch (Exception ignored) {}
-            }
-
-            try {
-                Object result = ((JavascriptExecutor) drv).executeScript(
-                        "const inputs = Array.from(document.querySelectorAll('input')); " +
-                                "for (const i of inputs) { " +
-                                "  const txt = (i.placeholder||i.getAttribute('aria-label')||i.id||i.name||'').toLowerCase(); " +
-                                "  const rect = i.getBoundingClientRect(); " +
-                                "  if (txt.includes('search') && rect.width>0 && rect.height>0) return i; " +
-                                "} return null;"
-                );
-                if (result instanceof WebElement) {
-                    WebElement el = (WebElement) result;
-                    if (el.isDisplayed() && el.isEnabled()) return el;
-                }
-            } catch (Exception ignored) {}
-
-            return null;
-        });
-    }
-
-    private boolean waitForSearchResults(long timeoutSeconds) {
-        By[] resultLocators = new By[] {
-                By.cssSelector("div.search-results"),
-                By.cssSelector(".search__results"),
-                By.cssSelector("section.search-results"),
-                By.cssSelector("#search-results"),
-                By.cssSelector(".results"),
-                By.cssSelector(".search-page")
-        };
-
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeoutSeconds));
-        try {
-            return wait.until(drv -> {
-                String url = "";
-                try { url = drv.getCurrentUrl().toLowerCase(); } catch (Exception ignored) {}
-                if (url.contains("/search") || url.contains("?q=") || url.contains("search?")) return true;
-
-                for (By loc : resultLocators) {
-                    try {
-                        List<WebElement> els = drv.findElements(loc);
-                        for (WebElement e : els) {
-                            if (e.isDisplayed()) {
-                                // também verificar se existem itens dentro do container
-                                List<WebElement> children = e.findElements(By.cssSelector("*"));
-                                if (children.size() > 0) return true;
-                            }
-                        }
-                    } catch (Exception ignored) {}
-                }
-                return false;
-            });
-        } catch (TimeoutException e) {
-            return false;
-        }
+        driver.quit();
     }
 
     @Test
     public void search() {
-        safeClick(mainPage.searchButton);
+        mainPage.searchButton.click();
 
-        WebElement searchField;
-        try {
-            searchField = waitForSearchInput(20);
-        } catch (TimeoutException e) {
-            searchField = null;
-        }
-
-        assertNotNull(searchField, "Campo de pesquisa não encontrado após tentativas e timeouts.");
-        searchField.clear();
+        WebElement searchField = driver.findElement(By.cssSelector("input[data-test$='inner']"));
         searchField.sendKeys("Selenium");
-        pause(300);
 
-        By submitLocator = By.cssSelector("button[data-test='full-search-button'], button[type='submit'], button[aria-label*='Search']");
-        try {
-            WebElement submit = new WebDriverWait(driver, Duration.ofSeconds(10))
-                    .until(ExpectedConditions.elementToBeClickable(submitLocator));
-            submit.click();
-        } catch (Exception ex) {
-            try { searchField.sendKeys(Keys.ENTER); } catch (Exception ignored) {}
-        }
+        WebElement submitButton = driver.findElement(By.cssSelector("input[data-test$='inner']"));
+        submitButton.click();
 
-        boolean results = waitForSearchResults(30);
-        assertTrue(results, "Página de resultados de pesquisa não foi carregada corretamente.");
+        WebElement searchPageField = driver.findElement(By.cssSelector("input[data-test$='inner']"));
+        assertEquals("Selenium", searchPageField.getAttribute("value"));
     }
+
 
     @Test
     public void toolsMenu() {
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        Actions actions = new Actions(driver);
+        mainPage.toolsMenu.click();
 
-        WebElement toolsButton = wait.until(ExpectedConditions.visibilityOf(mainPage.teamToolsButton));
-
-        actions.moveToElement(toolsButton)
-                .pause(Duration.ofMillis(500))
-                .perform();
-
-        assertTrue(toolsButton.isDisplayed(), "The submenu should be visible after hovering.");
+        WebElement menuPopup = driver.findElement(By.cssSelector("div[class*='71'] button[data-test='main-menu-item-action']"));
+        assertTrue(menuPopup.isDisplayed());
     }
 
     @Test
     public void navigationToAllTools() {
-        safeClick(mainPage.seeDeveloperToolsButton);
-        safeClick(mainPage.findYourToolsButton);
+        mainPage.seeDeveloperToolsButton.click();
+        mainPage.findYourToolsButton.click();
 
-        WebElement productsList = null;
-        try {
-            productsList = waitForAnyVisible(20,
-                    By.id("products-page"),
-                    By.cssSelector("div.products-list"),
-                    By.cssSelector(".products-grid"),
-                    By.cssSelector(".products-list"));
-        } catch (TimeoutException ignored) {}
-
-        assertNotNull(productsList, "Lista de produtos não encontrada.");
+        WebElement productsList = driver.findElement(By.id("products-page"));
         assertTrue(productsList.isDisplayed());
-        assertTrue(driver.getTitle().toLowerCase().contains("developer tools") ||
-                driver.getTitle().toLowerCase().contains("all developer tools") ||
-                driver.getTitle().toLowerCase().contains("tools"));
+        assertEquals("All Developer Tools and Products by JetBrains", driver.getTitle());
+    }
+
+
+    @Test
+    public void openStore() {
+
+        // 1) localizar o botão Store
+        WebElement storeButton = driver.findElement(
+                By.cssSelector("a[data-test='site-header-cart-action']")
+        );
+
+        // 2) clicar
+        storeButton.click();
+
+        // 3) validar que abriu a página da Store
+        assertTrue(driver.getCurrentUrl().contains("store"));
+
     }
 
     @Test
-    public void testFileUpload() throws IOException {
-        driver.get("https://the-internet.herokuapp.com/upload");
+    public void openLogin() {
 
-        String fileName = "teste_upload.txt";
-        File file = new File(System.getProperty("user.dir") + File.separator + fileName);
-        if (!file.exists()) {
-            file.createNewFile();
-        }
-        String absolutePath = file.getAbsolutePath();
+        // 1) clicar no botão de login
+        WebElement loginButton = driver.findElement(
+                By.cssSelector("a[data-test='site-header-profile-action'] svg[class*='22']")
+        );
+        loginButton.click();
 
-        WebElement fileInput = driver.findElement(By.id("file-upload"));
-        fileInput.sendKeys(absolutePath);
 
-        WebElement uploadButton = driver.findElement(By.id("file-submit"));
-        uploadButton.click();
+        assertTrue(driver.getCurrentUrl().contains("login"));
+    }
 
+    @Test
+    public void dynamicContentTest() {
+
+        // Ir para o site de testes dinâmicos (pedido na tarefa)
+        driver.get("https://the-internet.herokuapp.com/dynamic_loading/1");
+
+        // localizar botão Start
+        WebElement startButton = driver.findElement(By.cssSelector("#start button"));
+        startButton.click();
+
+        // esperar que o texto "Hello World!" apareça
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement finishText = wait.until(
+                ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#finish h4"))
+        );
 
-        WebElement header = wait.until(ExpectedConditions.visibilityOfElementLocated(By.tagName("h3")));
-        assertEquals("File Uploaded!", header.getText(), "Mensagem de sucesso incorreta.");
-
-        WebElement uploadedFiles = driver.findElement(By.id("uploaded-files"));
-        assertEquals(fileName, uploadedFiles.getText().trim(), "O nome do ficheiro enviado não corresponde.");
-
+        // validar conteúdo dinâmico
+        assertEquals("Hello World!", finishText.getText());
     }
 }

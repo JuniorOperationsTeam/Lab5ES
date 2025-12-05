@@ -26,7 +26,7 @@ public class MainPageTest {
 
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-        // FECHAR COOKIES ANTES DE QUALQUER COISA
+        // Fechar cookies antes de qualquer ação
         closeCookiesIfPresent();
 
         mainPage = new MainPage(driver);
@@ -34,27 +34,27 @@ public class MainPageTest {
 
     private void closeCookiesIfPresent() {
         try {
-            // espera até 5s por um banner de cookies
+            // Espera até 5s por um banner de cookies.
             WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(5));
 
-            // o overlay principal
+            // Overlay principal do cookie.
             WebElement container = shortWait.until(
                     ExpectedConditions.visibilityOfElementLocated(
                             By.cssSelector("div.ch2-container")
                     )
             );
 
-            // botão principal (aceitar/rejeitar – tanto faz para o teste)
+            // Botão principal (aceitar/rejeitar — indistinto para os testes).
             WebElement button = container.findElement(
                     By.cssSelector("button.ch2-btn-primary")
             );
             button.click();
 
-            // garantir que desapareceu
+            // Aguarda até o overlay desaparecer.
             shortWait.until(ExpectedConditions.invisibilityOf(container));
 
         } catch (TimeoutException | NoSuchElementException e) {
-            // se não aparecer banner ou a estrutura for ligeiramente diferente, segue em frente
+            // Se o banner não aparecer ou a estrutura for diferente, prossegue normalmente.
         }
     }
 
@@ -77,7 +77,6 @@ public class MainPageTest {
         assertEquals("Selenium", searchPageField.getAttribute("value"));
     }
 
-
     @Test
     public void toolsMenu() {
         mainPage.toolsMenu.click();
@@ -96,36 +95,68 @@ public class MainPageTest {
         assertEquals("All Developer Tools and Products by JetBrains", driver.getTitle());
     }
 
-
     @Test
     public void openStore() {
-
-        // 1) localizar o botão Store
+        // Localizar o botão Store
         WebElement storeButton = driver.findElement(
                 By.cssSelector("a[data-test='site-header-cart-action']")
         );
 
-        // 2) clicar
+        // Clicar
         storeButton.click();
 
-        // 3) validar que abriu a página da Store
+        // Validar que abriu a página da Store
         assertTrue(driver.getCurrentUrl().contains("store"));
-
     }
 
     @Test
     public void openLogin() {
-
-        // 1) clicar no botão de login
+        // Clicar no botão de login
         WebElement loginButton = driver.findElement(
                 By.cssSelector("a[data-test='site-header-profile-action'] svg[class*='22']")
         );
         loginButton.click();
 
-
         assertTrue(driver.getCurrentUrl().contains("login"));
     }
 
+    // --- NOVAS INTERAÇÕES ---
+
+    @Test
+    public void returnToHome() {
+        // 1. Forçar navegação para uma página diferente (ex: /all/)
+        driver.get("https://www.jetbrains.com/all/");
+
+        // 2. Encontrar o logótipo da JetBrains no cabeçalho
+        WebElement siteLogo = driver.findElement(
+                By.cssSelector("a[data-test='site-logo']")
+        );
+
+        // 3. Clicar no logótipo
+        siteLogo.click();
+
+        // 4. Verificar se voltámos à página inicial
+        assertEquals("https://www.jetbrains.com/", driver.getCurrentUrl());
+    }
+
+    @Test
+    public void solutionsMenu() {
+        // 1. Encontrar o botão "Solutions" no menu principal
+        WebElement solutionsButton = driver.findElement(
+                By.xpath("//button[@data-test='main-menu-item-action' and contains(., 'Solutions')]")
+        );
+
+        // 2. Clicar no menu
+        solutionsButton.click();
+
+        // 3. Verificar se o popup do menu apareceu.
+        WebElement subMenuLink = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//a[contains(text(), 'Remote Development')]")
+        ));
+
+        assertTrue(subMenuLink.isDisplayed());
+    }
+}
     @Test
     public void dynamicContentTest() {
 

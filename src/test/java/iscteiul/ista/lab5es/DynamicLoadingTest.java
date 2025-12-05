@@ -41,4 +41,5 @@ public class DynamicLoadingTest {
         // Validar o conteúdo carregado dinamicamente
         assertEquals("Hello World!", dynamicPage.finishText.getText());
     }
+
 }

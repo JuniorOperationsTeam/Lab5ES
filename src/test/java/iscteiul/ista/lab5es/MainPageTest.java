@@ -124,4 +124,23 @@ public class MainPageTest {
         assertTrue(driver.getCurrentUrl().contains("login"));
     }
 
+    @Test
+    public void dynamicContentTest() {
+
+        // Ir para o site de testes dinâmicos (pedido na tarefa)
+        driver.get("https://the-internet.herokuapp.com/dynamic_loading/1");
+
+        // localizar botão Start
+        WebElement startButton = driver.findElement(By.cssSelector("#start button"));
+        startButton.click();
+
+        // esperar que o texto "Hello World!" apareça
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement finishText = wait.until(
+                ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#finish h4"))
+        );
+
+        // validar conteúdo dinâmico
+        assertEquals("Hello World!", finishText.getText());
+    }
 }

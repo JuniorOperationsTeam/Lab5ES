@@ -1,4 +1,3 @@
-// java
 package iscteiul.ista.lab5es;
 
 import org.junit.jupiter.api.*;
@@ -12,9 +11,9 @@ import java.time.Duration;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.StaleElementReferenceException;
-import java.util.Arrays;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class MainPageTest {
     private WebDriver driver;
@@ -24,7 +23,6 @@ public class MainPageTest {
     public void setUp() {
         driver = new ChromeDriver();
         driver.manage().window().maximize();
-        // prefer explicit waits
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
         driver.get("https://www.jetbrains.com/");
         mainPage = new MainPage(driver);
@@ -120,7 +118,6 @@ public class MainPageTest {
                 } catch (Exception ignored) {}
             }
 
-            // fallback: JS procura inputs visíveis cujo placeholder/aria-label/id/nome contenha 'search'
             try {
                 Object result = ((JavascriptExecutor) drv).executeScript(
                         "const inputs = Array.from(document.querySelectorAll('input')); " +
@@ -178,7 +175,6 @@ public class MainPageTest {
 
     @Test
     public void search() {
-        // abrir a caixa de pesquisa (botão do mainPage)
         safeClick(mainPage.searchButton);
 
         WebElement searchField;
@@ -199,7 +195,6 @@ public class MainPageTest {
                     .until(ExpectedConditions.elementToBeClickable(submitLocator));
             submit.click();
         } catch (Exception ex) {
-            // fallback: enviar ENTER
             try { searchField.sendKeys(Keys.ENTER); } catch (Exception ignored) {}
         }
 
@@ -207,26 +202,17 @@ public class MainPageTest {
         assertTrue(results, "Página de resultados de pesquisa não foi carregada corretamente.");
     }
 
-    // Inside MainPageTest.java
     @Test
     public void toolsMenu() {
-        // 1. Setup Wait and Actions
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         Actions actions = new Actions(driver);
 
-        // 2. Wait for the corrected/existing menu button (e.g., Developer Tools)
         WebElement toolsButton = wait.until(ExpectedConditions.visibilityOf(mainPage.teamToolsButton));
 
-        // 3. Perform the Mouse-Over Action
         actions.moveToElement(toolsButton)
                 .pause(Duration.ofMillis(500))
                 .perform();
 
-        // 4. Wait for the submenu (This step will now be reached)
-        // If the submenu locator itself fails, you'll need to inspect it next.
-     //   WebElement submenu = wait.until(ExpectedConditions.visibilityOf(mainPage.toolsSubmenu));
-
-        // 5. Assert
         assertTrue(toolsButton.isDisplayed(), "The submenu should be visible after hovering.");
     }
 
@@ -246,9 +232,35 @@ public class MainPageTest {
 
         assertNotNull(productsList, "Lista de produtos não encontrada.");
         assertTrue(productsList.isDisplayed());
-        // título pode variar; ajuste se necessário
         assertTrue(driver.getTitle().toLowerCase().contains("developer tools") ||
                 driver.getTitle().toLowerCase().contains("all developer tools") ||
                 driver.getTitle().toLowerCase().contains("tools"));
+    }
+
+    @Test
+    public void testFileUpload() throws IOException {
+        driver.get("https://the-internet.herokuapp.com/upload");
+
+        String fileName = "teste_upload.txt";
+        File file = new File(System.getProperty("user.dir") + File.separator + fileName);
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+        String absolutePath = file.getAbsolutePath();
+
+        WebElement fileInput = driver.findElement(By.id("file-upload"));
+        fileInput.sendKeys(absolutePath);
+
+        WebElement uploadButton = driver.findElement(By.id("file-submit"));
+        uploadButton.click();
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        WebElement header = wait.until(ExpectedConditions.visibilityOfElementLocated(By.tagName("h3")));
+        assertEquals("File Uploaded!", header.getText(), "Mensagem de sucesso incorreta.");
+
+        WebElement uploadedFiles = driver.findElement(By.id("uploaded-files"));
+        assertEquals(fileName, uploadedFiles.getText().trim(), "O nome do ficheiro enviado não corresponde.");
+
     }
 }

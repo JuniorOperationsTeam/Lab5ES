@@ -6,19 +6,14 @@ import org.openqa.selenium.support.PageFactory;
 
 // page_url = https://www.jetbrains.com/
 public class MainPage {
-
     @FindBy(xpath = "//*[@data-test-marker='Developer Tools']")
     public WebElement seeDeveloperToolsButton;
 
     @FindBy(xpath = "//*[@data-test='suggestion-link']")
     public WebElement findYourToolsButton;
 
-    // Example definition for Team Tools (you must verify this locator)
-    @FindBy(xpath = "//*[@data-test-marker='Team Tools']")
-    public WebElement teamToolsButton;
-
-   // @FindBy(css = "div[data-test='main-submenu'][data-test-parent='tools']")
-   // public WebElement toolsSubmenu;
+    @FindBy(xpath = "//div[@data-test='main-menu-item' and @data-test-marker = 'Developer Tools']")
+    public WebElement toolsMenu;
 
     @FindBy(css = "[data-test='site-header-search-action']")
     public WebElement searchButton;
@@ -27,4 +22,3 @@ public class MainPage {
         PageFactory.initElements(driver, this);
     }
 }
-

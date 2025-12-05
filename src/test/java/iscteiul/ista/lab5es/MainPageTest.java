@@ -8,6 +8,8 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.Duration;
 
 public class MainPageTest {
@@ -153,5 +155,51 @@ public class MainPageTest {
         ));
 
         assertTrue(subMenuLink.isDisplayed());
+    }
+}
+    @Test
+    public void dynamicContentTest() {
+
+        // Ir para o site de testes dinâmicos (pedido na tarefa)
+        driver.get("https://the-internet.herokuapp.com/dynamic_loading/1");
+
+        // localizar botão Start
+        WebElement startButton = driver.findElement(By.cssSelector("#start button"));
+        startButton.click();
+
+        // esperar que o texto "Hello World!" apareça
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement finishText = wait.until(
+                ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#finish h4"))
+        );
+
+        // validar conteúdo dinâmico
+        assertEquals("Hello World!", finishText.getText());
+    }
+
+    @Test
+    public void testFileUpload() throws IOException {
+        driver.get("https://the-internet.herokuapp.com/upload");
+
+        String fileName = "teste_upload.txt";
+        File file = new File(System.getProperty("user.dir") + File.separator + fileName);
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+        String absolutePath = file.getAbsolutePath();
+
+        WebElement fileInput = driver.findElement(By.id("file-upload"));
+        fileInput.sendKeys(absolutePath);
+
+        WebElement uploadButton = driver.findElement(By.id("file-submit"));
+        uploadButton.click();
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        WebElement header = wait.until(ExpectedConditions.visibilityOfElementLocated(By.tagName("h3")));
+        assertEquals("File Uploaded!", header.getText(), "Mensagem de sucesso incorreta.");
+
+        WebElement uploadedFiles = driver.findElement(By.id("uploaded-files"));
+        assertEquals(fileName, uploadedFiles.getText().trim(), "O nome do ficheiro enviado não corresponde.");
     }
 }

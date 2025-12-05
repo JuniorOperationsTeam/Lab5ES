@@ -18,6 +18,7 @@ import java.util.List;
 public class MainPageTest {
     private WebDriver driver;
     private MainPage mainPage;
+    private WebDriverWait wait;
 
     @BeforeEach
     public void setUp() {

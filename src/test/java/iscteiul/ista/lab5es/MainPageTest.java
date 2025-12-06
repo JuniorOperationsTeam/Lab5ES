@@ -156,7 +156,7 @@ public class MainPageTest {
 
         assertTrue(subMenuLink.isDisplayed());
     }
-}
+
     @Test
     public void dynamicContentTest() {
 

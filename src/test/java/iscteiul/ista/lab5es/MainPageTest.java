@@ -60,7 +60,9 @@ public class MainPageTest {
 
     @AfterEach
     public void tearDown() {
-        driver.quit();
+        if (driver != null) {
+            driver.quit();
+        }
     }
 
     @Test
@@ -120,8 +122,6 @@ public class MainPageTest {
         assertTrue(driver.getCurrentUrl().contains("login"));
     }
 
-    // --- NOVAS INTERAÇÕES ---
-
     @Test
     public void returnToHome() {
         // 1. Forçar navegação para uma página diferente (ex: /all/)
@@ -159,7 +159,6 @@ public class MainPageTest {
 
     @Test
     public void dynamicContentTest() {
-
         // Ir para o site de testes dinâmicos (pedido na tarefa)
         driver.get("https://the-internet.herokuapp.com/dynamic_loading/1");
 
@@ -168,6 +167,8 @@ public class MainPageTest {
         startButton.click();
 
         // esperar que o texto "Hello World!" apareça
+        // Nota: re-instanciar o WebDriverWait aqui não é estritamente necessário se usares o 'wait' global,
+        // mas não faz mal.
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         WebElement finishText = wait.until(
                 ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#finish h4"))
@@ -183,6 +184,8 @@ public class MainPageTest {
 
         String fileName = "teste_upload.txt";
         File file = new File(System.getProperty("user.dir") + File.separator + fileName);
+
+        // Criar o ficheiro se não existir para evitar falhas no teste
         if (!file.exists()) {
             file.createNewFile();
         }

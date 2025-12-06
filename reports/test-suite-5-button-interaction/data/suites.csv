@@ -1,0 +1,6 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","8149","clickMeButtonShowsEvent()","","2025-12-05","failed","2025-12-05","","test.suite5.interaction.pages.VaadinButtonInteractionTest","test.suite5.interaction.pages.VaadinButtonInteractionTest","clickMeButtonShowsEvent"
+"","8111","clickButtonByLabel()","","2025-12-05","failed","2025-12-05","","test.suite5.interaction.pages.VaadinButtonInteractionTest","test.suite5.interaction.pages.VaadinButtonInteractionTest","clickButtonByLabel"
+"","12020","allButtonsAreVisible()","","2025-12-05","failed","2025-12-05","","test.suite5.interaction.pages.VaadinButtonInteractionTest","test.suite5.interaction.pages.VaadinButtonInteractionTest","allButtonsAreVisible"
+"","9626","testLogin()","","2025-12-05","failed","2025-12-05","","test.suite5.pages.MainPageSelenideTest","test.suite5.pages.MainPageSelenideTest","testLogin"
+"","3884","clickButtonClick()","","2025-12-06","passed","2025-12-06","","test.suite5.interaction.pages.VaadinButtonInteractionTest","test.suite5.interaction.pages.VaadinButtonInteractionTest","clickButtonClick"

@@ -157,10 +157,6 @@ public class MainPageTest {
         assertTrue(subMenuLink.isDisplayed());
     }
 
-    // --- A PARTIR DAQUI ESTAVAM OS MÉTODOS QUE DAVAM ERRO ---
-    // A chaveta que fechava a classe foi removida daqui para permitir
-    // que estes métodos façam parte da classe.
-
     @Test
     public void dynamicContentTest() {
         // Ir para o site de testes dinâmicos (pedido na tarefa)
